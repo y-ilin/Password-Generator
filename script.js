@@ -21,7 +21,7 @@ var possibleChars = "";
 
 //************************************ Functions ************************************//
 
-// 1. ordered password for minLength
+// 1. input a character from each required parameter into the password
 var requiredParams = function(userParameters) {
     if (userParameters["lowercase"]) {
         possibleChars = possibleChars + lettersLo;
@@ -57,9 +57,6 @@ var requiredParams = function(userParameters) {
 var remainingChars = function(possibleChars, passwordLength, parameterCount) {
     // Calculate remaining characters to fill
     var remainingCharsCount = passwordLength - parameterCount;
-    // console.log("parameter count is: " + parameterCount);
-    // console.log("password length is: " + passwordLength);
-    // console.log("remaining characters: " + remainingCharsCount);
     for (var i=0; i<remainingCharsCount; i++) {
         var newChar = possibleChars[ Math.floor(Math.random()*possibleChars.length) ];
         password = password + newChar;
@@ -90,17 +87,15 @@ var handleButtonClick = function() {
     parameterCount = 0
     possibleChars = "";
 
-    
-    // Get user input for minimum and maximum password lengths
-    var minLength = prompt("minLength?");
-    var maxLength = prompt("maxLength?");
-
-    // Get other current user parameters
+    // Get user input for parameters
+    var minLength = parseFloat(prompt("minLength?"));
+    var maxLength = parseFloat(prompt("maxLength?"));
     var lowercase = lowercaseSwitch.checked;
     var uppercase = uppercaseSwitch.checked;
     var numeric = numericSwitch.checked;
     var specialChar = specialCharSwitch.checked;
-
+     console.log(minLength);
+   console.log(maxLength);
     // allParameters object storing whether user has selected True/False for each parameter
     allParameters["lowercase"] = lowercase;
     allParameters["uppercase"] = uppercase;
@@ -120,13 +115,15 @@ var handleButtonClick = function() {
     // Generate a random password length between the minimum and maximum length specified by user
     var passwordLength = Math.max(parameterCount, minLength) + Math.floor( Math.random() * (maxLength- Math.max(parameterCount, minLength) +1) );
 
-    // Validating password criteria **********************************
+    // Validating password criteria
     if (parameterCount < 1){
         alert("Please select at least one character type");
     } else if (parameterCount > maxLength) {
         alert("Too many parameters selected for this maximum length. Please select fewer parameters or increase the max length.")
+    } else if (maxLength < minLength) {
+        alert("Maximum length must be greater than minimum length.")
     } else {
-    // If all validation checks are passed
+    // If all validation checks are passed, run functions to create password
         [password, possibleChars] = requiredParams(userParameters);
         password = remainingChars(possibleChars, passwordLength, parameterCount);
         password = shuffle(password);
