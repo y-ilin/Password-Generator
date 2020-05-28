@@ -1,86 +1,140 @@
-// Library of characters
+// Library of all possible characters
 var specialCharString = ` !"#$%&'()*+,-./:;<=>?@[\]^_{|}~` + "`";
 var lettersLo = "abcdefghijklmnopqrstuvwxyz";
 var lettersUp = lettersLo.toUpperCase();
 var numbers = "0123456789";
 
 // Grab elements from HTML
-var button = document.getElementsByClassName("btn")
-var passwordBox = document.getElementById("password");
+var button = document.querySelector("#generateButton");
+var passwordBox = document.getElementById("passwordBox");
+var lowercaseSwitch = document.querySelector("#lowercaseSwitch");
+var uppercaseSwitch = document.querySelector("#uppercaseSwitch");
+var numericSwitch = document.querySelector("#numericSwitch");
+var specialCharSwitch = document.querySelector("#specialCharSwitch");
 
-// User clicks button to generate a new password
-
-// Prompt user for password parameters:
-//// Password minimum length - maximum length
-//// Include: lowercase, uppercase, numeric, and/or special characters
-var password = [];
+// Initializing variables
+var password = "";
+var allParameters = {}; // Object includes all possible parameters
+var userParameters = {}; // Object includes only parameters selected by user
+var parameterCount = 0
 var possibleChars = "";
 
-// Parameters
-var parameterCount = 1; // must satisfy: parameterCount >= minLength
-
-var minLength = 1;
-var maxLength = 10;
-var lowercase = true;
-var uppercase = true;
-var numeric = true;
-var specialChar = true;
-
-// User clicks button to generate password, validate user password criteria
-//// If validation is passed (at least one character type must be selected),
-//////// Generate random password
-//// Else
-//////// Alert that user cannot proceed until valid criteria are selected
-
-// Validating password criteria
-while (parameterCount < 1){
-    alert("Please select at least one character type");
-}
-
-while (parameterCount > maxLength) {
-    alert("Too many parameters selected for this maximum length. Please select fewer parameters or increase the max length.")
-}
+//************************************ Functions ************************************//
 
 // 1. ordered password for minLength
-var requiredParams = function(lowercase, uppercase, numeric, specialChar) {
-    if (lowercase) {
+var requiredParams = function(userParameters) {
+    if (userParameters["lowercase"]) {
         possibleChars = possibleChars + lettersLo;
         // Generate random lowercase letter
         var newChar = lettersLo[ Math.floor(Math.random()*lettersLo.length) ];
-        password.push(newChar);
+        password = password + newChar;
     };
-    if (uppercase) {
+    if (userParameters["uppercase"]) {
         possibleChars = possibleChars + lettersUp;
         // Generate random uppercase letter
         var newChar = lettersUp[ Math.floor(Math.random()*lettersUp.length) ];
-        password.push(newChar);
+        password = password + newChar;
     };
-    if (numeric) {
+    if (userParameters["numeric"]) {
         possibleChars = possibleChars + numbers;
         // Generate random number between 0 - 9
         var newChar = numbers[ Math.floor(Math.random()*numbers.length) ];
-        password.push(newChar);
+        password = password + newChar;
         // var newChar = Math.floor(Math.random()*10);
         // password.push(newChar);
     };
-    if (specialChar) {
+    if (userParameters["specialChar"]) {
         possibleChars = possibleChars + specialCharString;
+        // Generate random special character
         var newChar = specialCharString[ Math.floor(Math.random()*specialCharString.length) ];
-        password.push(newChar);
+        password = password + newChar;
     };
 
-    console.log(password);
-    return password;
+    return [password, possibleChars];
 }
 
 // 2. rest of letters made up of array of all possible characters
-var remainingChars = function(minLength, maxLength, possibleChars) {
+var remainingChars = function(possibleChars, passwordLength, parameterCount) {
+    // Calculate remaining characters to fill
+    var remainingCharsCount = passwordLength - parameterCount;
+    // console.log("parameter count is: " + parameterCount);
+    // console.log("password length is: " + passwordLength);
+    // console.log("remaining characters: " + remainingCharsCount);
+    for (var i=0; i<remainingCharsCount; i++) {
+        var newChar = possibleChars[ Math.floor(Math.random()*possibleChars.length) ];
+        password = password + newChar;
+    }
+    return password;
+}
+
+// 3. Scramble order of characters
+var shuffle = function(string) {
+    stringArray = string.split("");
+    i = stringArray.length;
+    while (i>0){
+        index = Math.floor(Math.random()*i);
+        i--;
+        temp = stringArray[i];
+        stringArray[i] = stringArray[index];
+        stringArray[index] = temp;
+ }
+    return stringArray.join("");
+}
+
+// Call functions when user clicks "Generate Password" button
+var handleButtonClick = function() {
+    // Clearing password and parameters in case user wants to generate another password
+    password = "";
+    allParameters = {}; // Object includes all possible parameters
+    userParameters = {}; // Object includes only parameters selected by user
+    parameterCount = 0
+    possibleChars = "";
+
+    
+    // Get user input for minimum and maximum password lengths
+    var minLength = prompt("minLength?");
+    var maxLength = prompt("maxLength?");
+
+    // Get other current user parameters
+    var lowercase = lowercaseSwitch.checked;
+    var uppercase = uppercaseSwitch.checked;
+    var numeric = numericSwitch.checked;
+    var specialChar = specialCharSwitch.checked;
+
+    // allParameters object storing whether user has selected True/False for each parameter
+    allParameters["lowercase"] = lowercase;
+    allParameters["uppercase"] = uppercase;
+    allParameters["numeric"] = numeric;
+    allParameters["specialChar"] = specialChar;
+
+    // Enter user selected parameters into userParameters object
+    Object.keys(allParameters).forEach( function(key){
+        if (allParameters[key]){
+        userParameters[key] = allParameters[key];
+        };
+    });
+
+    // Count number of parameters
+    parameterCount = Object.keys(userParameters).length;
+
+    // Generate a random password length between the minimum and maximum length specified by user
+    var passwordLength = Math.max(parameterCount, minLength) + Math.floor( Math.random() * (maxLength- Math.max(parameterCount, minLength) +1) );
+
+    // Validating password criteria **********************************
+    if (parameterCount < 1){
+        alert("Please select at least one character type");
+    } else if (parameterCount > maxLength) {
+        alert("Too many parameters selected for this maximum length. Please select fewer parameters or increase the max length.")
+    } else {
+    // If all validation checks are passed
+        [password, possibleChars] = requiredParams(userParameters);
+        password = remainingChars(possibleChars, passwordLength, parameterCount);
+        password = shuffle(password);
+        // Display password on page
+        passwordBox.textContent = password;
+    }
 
 }
 
-
-// Display password on page
-
-
-
-// Reset password and possibleChars to empty strings?
+// Event listener for "Generate Password" button
+button.addEventListener("click", handleButtonClick);
