@@ -88,14 +88,13 @@ var handleButtonClick = function() {
     possibleChars = "";
 
     // Get user input for parameters
-    var minLength = parseFloat(prompt("minLength?"));
-    var maxLength = parseFloat(prompt("maxLength?"));
+    var minLength = parseInt(prompt("Minimum length of password?"));
+    var maxLength = parseInt(prompt("Maximum length of password?"));
     var lowercase = lowercaseSwitch.checked;
     var uppercase = uppercaseSwitch.checked;
     var numeric = numericSwitch.checked;
     var specialChar = specialCharSwitch.checked;
-     console.log(minLength);
-   console.log(maxLength);
+
     // allParameters object storing whether user has selected True/False for each parameter
     allParameters["lowercase"] = lowercase;
     allParameters["uppercase"] = uppercase;
@@ -116,13 +115,15 @@ var handleButtonClick = function() {
     var passwordLength = Math.max(parameterCount, minLength) + Math.floor( Math.random() * (maxLength- Math.max(parameterCount, minLength) +1) );
 
     // Validating password criteria
-    if (parameterCount < 1){
+    if (minLength<1 || maxLength<1) {
+        alert("Please enter a positive number");
+    } else if (parameterCount < 1){
         alert("Please select at least one character type");
     } else if (parameterCount > maxLength) {
-        alert("Too many parameters selected for this maximum length. Please select fewer parameters or increase the max length.")
+        alert("Too many parameters selected for this maximum length. Please select fewer parameters or increase the max length.");
     } else if (maxLength < minLength) {
         alert("Maximum length must be greater than minimum length.")
-    } else {
+    }  else {
     // If all validation checks are passed, run functions to create password
         [password, possibleChars] = requiredParams(userParameters);
         password = remainingChars(possibleChars, passwordLength, parameterCount);
@@ -130,7 +131,6 @@ var handleButtonClick = function() {
         // Display password on page
         passwordBox.textContent = password;
     }
-
 }
 
 // Event listener for "Generate Password" button
